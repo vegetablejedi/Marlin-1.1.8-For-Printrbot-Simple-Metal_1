@@ -14384,6 +14384,10 @@ void setup() {
 
   thermalManager.init();    // Initialize temperature loop
 
+  #if HAS_COLOR_LEDS
+    leds.setup();
+  #endif
+
   #if ENABLED(USE_WATCHDOG)
     watchdog_init();
   #endif
@@ -14446,10 +14450,6 @@ void setup() {
 
   #if PIN_EXISTS(STAT_LED_BLUE)
     OUT_WRITE(STAT_LED_BLUE_PIN, LOW); // turn it off
-  #endif
-
-  #if HAS_COLOR_LEDS
-    leds.setup();
   #endif
 
   #if ENABLED(RGB_LED) || ENABLED(RGBW_LED)

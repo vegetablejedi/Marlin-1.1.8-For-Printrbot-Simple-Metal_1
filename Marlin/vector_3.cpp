@@ -81,6 +81,35 @@ void vector_3::apply_rotation(matrix_3x3 matrix) {
   z = resultZ;
 }
 
+namespace {
+
+/*
+ * https://en.wikipedia.org/wiki/Identity_matrix
+ *
+ * | 1 0 0 |
+ * | 0 1 0 |
+ * | 0 0 1 |
+ */
+
+inline float calcFact0(float n, float factor)
+{
+  return n * factor;
+}
+
+inline float calcFact1(float n, float factor)
+{
+  return 1.0 + ((n-1.0)*factor);
+}
+
+} // namespace
+
+float matrix_3x3::get_z_by_factor(vector_3 input, float factor)
+{
+  return input.x * calcFact0(matrix[3 * 0 + 2], factor)
+        + input.y * calcFact0(matrix[3 * 1 + 2], factor)
+        + input.z * calcFact1(matrix[3 * 2 + 2], factor);
+}
+
 void vector_3::debug(const char * const title) {
   serialprintPGM(title);
   SERIAL_PROTOCOLPGM(" x: ");

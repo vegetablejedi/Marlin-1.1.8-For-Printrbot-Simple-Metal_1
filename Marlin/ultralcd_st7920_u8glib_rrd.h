@@ -37,7 +37,7 @@
 #define LCD_PIXEL_HEIGHT 64
 
 //set optimization so ARDUINO optimizes this file
-#pragma GCC optimize (3)
+//#pragma GCC optimize (3)
 
 // If you want you can define your own set of delays in Configuration.h
 //#define ST7920_DELAY_1 DELAY_0_NOP

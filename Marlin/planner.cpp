@@ -617,13 +617,32 @@ void Planner::check_axes_activity() {
 
     #if ABL_PLANAR
 
-      float dx = rx - (X_TILT_FULCRUM),
-            dy = ry - (Y_TILT_FULCRUM);
+		float dx(rx - (X_TILT_FULCRUM));
+		float dy(ry - (Y_TILT_FULCRUM));
 
-      apply_rotation_xyz(bed_level_matrix, dx, dy, rz);
+		if ( z_fade_height != 0.0 )
+		{
+			static float z_fade_factor = 1.0;
+			static float prev_rz = -999.0;
 
-      rx = dx + X_TILT_FULCRUM;
-      ry = dy + Y_TILT_FULCRUM;
+			if ( rz < z_fade_height )
+			{
+				if ( prev_rz != rz )
+				{
+					prev_rz = rz;
+					z_fade_factor = 1.0 - rz * inverse_z_fade_height;
+				}
+
+				rz = bed_level_matrix.get_z_by_factor(vector_3(dx, dy, rz), z_fade_factor);
+			}
+		}
+		else
+		{
+			apply_rotation_xyz(bed_level_matrix, dx, dy, rz);
+
+			rx = dx + X_TILT_FULCRUM;
+			ry = dy + Y_TILT_FULCRUM;
+		}
 
     #else
 
@@ -659,25 +678,42 @@ void Planner::check_axes_activity() {
 
   void Planner::unapply_leveling(float raw[XYZ]) {
 
+    #if ! ABL_PLANAR
     #if ENABLED(ENABLE_LEVELING_FADE_HEIGHT)
       const float fade_scaling_factor = fade_scaling_factor_for_z(raw[Z_AXIS]);
     #else
       constexpr float fade_scaling_factor = 1.0;
     #endif
+    #endif
 
-    if (leveling_active && fade_scaling_factor) {
+    if (leveling_active) {
 
       #if ABL_PLANAR
 
-        matrix_3x3 inverse = matrix_3x3::transpose(bed_level_matrix);
+		if ( z_fade_height != 0.0  )
+		{
+			const float rz(raw[Z_AXIS]);
 
-        float dx = raw[X_AXIS] - (X_TILT_FULCRUM),
-              dy = raw[Y_AXIS] - (Y_TILT_FULCRUM);
+			if ( rz < z_fade_height )
+			{
+				matrix_3x3 inverse(matrix_3x3::transpose(bed_level_matrix));
+				const float dx(raw[X_AXIS] - (X_TILT_FULCRUM));
+				const float dy(raw[Y_AXIS] - (Y_TILT_FULCRUM));
 
-        apply_rotation_xyz(inverse, dx, dy, raw[Z_AXIS]);
+				raw[Z_AXIS] = inverse.get_z_by_factor(vector_3(dx, dy, rz), (z_fade_height - rz) / z_fade_height);
+			}
+		}
+		else
+		{
+			matrix_3x3 inverse = matrix_3x3::transpose(bed_level_matrix);
+			float dx(raw[X_AXIS] - (X_TILT_FULCRUM));
+			float dy(raw[Y_AXIS] - (Y_TILT_FULCRUM));
 
-        raw[X_AXIS] = dx + X_TILT_FULCRUM;
-        raw[Y_AXIS] = dy + Y_TILT_FULCRUM;
+			apply_rotation_xyz(inverse, dx, dy, raw[Z_AXIS]);
+
+			raw[X_AXIS] = dx + X_TILT_FULCRUM;
+			raw[Y_AXIS] = dy + Y_TILT_FULCRUM;
+		}
 
       #else // !ABL_PLANAR
 

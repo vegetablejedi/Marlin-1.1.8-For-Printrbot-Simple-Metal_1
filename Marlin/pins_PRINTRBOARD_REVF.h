@@ -195,7 +195,9 @@
 //
 // LCD / Controller
 //
-//#define USE_INTERNAL_SD
+#define USE_INTERNAL_SD
+#define SDSS 20
+#define SD_DETECT_PIN 15
 
 #if ENABLED(ULTRA_LCD)
   #define LCD_PINS_RS       9   // E1       JP11-11

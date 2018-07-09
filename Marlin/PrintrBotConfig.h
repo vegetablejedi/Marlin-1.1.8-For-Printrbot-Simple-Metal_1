@@ -1,0 +1,5 @@
+#define ZROD_FOUR_START_8MM 1
+#define PULLEY_XY_16T 1
+#define EXTRUDER_GEARHEAD 1
+#define X_AXIS_STANDARD 1
+#define ZROD_SUPER_Z 1

@@ -1,0 +1,26 @@
+PrintrBot Simple Firmware legend:
+
+extruder:
+    |
+    |- extold - the original simple extruder
+    |- extgh  - the gearhead extruder
+
+        z-axis height:
+            |
+            |- origz  - the original simple z height
+            |- superz - the super-z upgrade
+
+            x-axis width:
+                |
+                |- origx - the original simple z width
+                |- xupg  - the x upgrade
+
+                z-rod type:
+                    |
+                    |- quarter - the original simple quarter inch z lead-screw
+                    |- fs8     - the 8mm four-start z lead-screw
+
+                    pulley teeth:
+                        20t - the original simple 20 tooth pulleys
+                        16t - converted to 16 tooth pulleys
+

@@ -28,6 +28,8 @@
 
 #if ENABLED(NEOPIXEL_LED)
 
+#include "types.h"
+#include "utility.h"
 #include "neopixel.h"
 
 Adafruit_NeoPixel pixels(NEOPIXEL_PIXELS, NEOPIXEL_PIN, NEOPIXEL_TYPE + NEO_KHZ800);

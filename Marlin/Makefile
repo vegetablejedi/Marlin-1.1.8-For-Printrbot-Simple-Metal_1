@@ -83,11 +83,11 @@ LIQUID_TWI2        ?= 0
 WIRE               ?= 0
 
 # this defines if U8GLIB is needed (may require RELOC_WORKAROUND)
-U8GLIB             ?= 1
+U8GLIB             ?= 0
 
 # this defines whether to add a workaround for the avr-gcc relocation bug
 #	  https://www.stix.id.au/wiki/AVR_relocation_truncations_workaround
-RELOC_WORKAROUND   ?= 1
+RELOC_WORKAROUND   ?= 0
 
 ############################################################################
 # Below here nothing should be changed...
@@ -235,6 +235,11 @@ else ifeq  ($(HARDWARE_MOTHERBOARD),301)
 HARDWARE_VARIANT ?= arduino
 MCU              ?= atmega2560
 
+#Mini Rambo
+else ifeq  ($(HARDWARE_MOTHERBOARD),302)
+HARDWARE_VARIANT ?= arduino
+MCU              ?= atmega2560
+
 # Azteeg
 else ifeq  ($(HARDWARE_MOTHERBOARD),67)
 HARDWARE_VARIANT ?= arduino
@@ -263,22 +268,32 @@ TARGET = $(notdir $(CURDIR))
 
 VPATH = .
 VPATH += $(BUILD_DIR)
+ifeq ($(HARDWARE_VARIANT), Teensy)
+VPATH += $(ARDUINO_INSTALL_DIR)/hardware/teensy/avr/cores/teensy
+VPATH += $(ARDUINO_INSTALL_DIR)/hardware/teensy/avr/libraries/Wire
+VPATH += $(ARDUINO_INSTALL_DIR)/hardware/teensy/avr/libraries/Wire/utility
+VPATH += $(ARDUINO_INSTALL_DIR)/hardware/teensy/avr/libraries/SPI
+else
 VPATH += $(ARDUINO_INSTALL_DIR)/hardware/arduino/avr/cores/arduino
-
 VPATH += $(ARDUINO_INSTALL_DIR)/hardware/arduino/avr/libraries/SPI
 VPATH += $(ARDUINO_INSTALL_DIR)/hardware/arduino/avr/libraries/SPI/src
-VPATH += $(ARDUINO_INSTALL_DIR)/libraries/LiquidCrystal/src
+VPATH += $(HARDWARE_DIR)/arduino/hardware/teensy/avr/libraries/SPI
+endif
 ifeq ($(LIQUID_TWI2), 1)
 VPATH += $(ARDUINO_INSTALL_DIR)/libraries/Wire
 VPATH += $(ARDUINO_INSTALL_DIR)/libraries/Wire/utility
-VPATH += $(ARDUINO_INSTALL_DIR)/libraries/LiquidTWI2
+VPATH += $(ARDUINO_INSTALL_DIR)/hardware/arduino/avr/libraries/Wire/src
+VPATH += $(ARDUINO_INSTALL_DIR)/hardware/arduino/avr/libraries/Wire/src/utility
+VPATH += $(HOME)/Arduino/libraries/LiquidTWI2
 endif
 ifeq ($(WIRE), 1)
-VPATH += $(ARDUINO_INSTALL_DIR)/libraries/Wire
-VPATH += $(ARDUINO_INSTALL_DIR)/libraries/Wire/utility
+VPATH += $(ARDUINO_INSTALL_DIR)/hardware/arduino/avr/libraries/Wire/src
+VPATH += $(ARDUINO_INSTALL_DIR)/hardware/arduino/avr/libraries/Wire/src/utility
+VPATH += $(ARDUINO_INSTALL_DIR)/hardware/teensy/avr/libraries/Wire/src
 endif
 ifeq ($(NEOPIXEL), 1)
-VPATH += $(ARDUINO_INSTALL_DIR)/libraries/Adafruit_NeoPixel
+VPATH += $(HOME)/Arduino/libraries/Adafruit_NeoPixel
+CXXSRC += leds.cpp neopixel.cpp Adafruit_NeoPixel.cpp
 endif
 ifeq ($(U8GLIB), 1)
 VPATH += $(ARDUINO_INSTALL_DIR)/libraries/U8glib
@@ -288,6 +303,7 @@ endif
 ifeq ($(HARDWARE_VARIANT), arduino)
 HARDWARE_SUB_VARIANT ?= mega
 VPATH += $(ARDUINO_INSTALL_DIR)/hardware/arduino/avr/variants/$(HARDWARE_SUB_VARIANT)
+VPATH += $(HARDWARE_DIR)/arduino/hardware/arduino/avr/libraries/SPI
 else
 ifeq ($(HARDWARE_VARIANT), Sanguino)
 VPATH += $(HARDWARE_DIR)/marlin/avr/variants/sanguino
@@ -296,24 +312,27 @@ HARDWARE_SUB_VARIANT ?= standard
 VPATH += $(HARDWARE_DIR)/$(HARDWARE_VARIANT)/variants/$(HARDWARE_SUB_VARIANT)
 endif
 endif
+ifeq ($(HARDWARE_VARIANT), Teensy)
+SRC = wiring.c twi.c
+CXXSRC = WMath.cpp HardwareSerial.cpp Print.cpp Wire.cpp
+else
 SRC = wiring.c \
 	wiring_analog.c wiring_digital.c \
 	wiring_pulse.c \
 	wiring_shift.c WInterrupts.c hooks.c
-ifeq ($(HARDWARE_VARIANT), Teensy)
-SRC = wiring.c
-VPATH += $(ARDUINO_INSTALL_DIR)/hardware/teensy/cores/teensy
-endif
 CXXSRC = WMath.cpp WString.cpp Print.cpp SPI.cpp Tone.cpp
+endif
 CXXSRC += $(wildcard *.cpp)
 ifeq ($(NEOPIXEL), 1)
 CXXSRC += Adafruit_NeoPixel.cpp
 endif
+ifneq ($(HARDWARE_VARIANT), Teensy)
 ifeq ($(LIQUID_TWI2), 0)
 CXXSRC += LiquidCrystal.cpp
 else
 SRC += twi.c
 CXXSRC += Wire.cpp LiquidTWI2.cpp
+endif
 endif
 
 ifeq ($(WIRE), 1)
@@ -368,7 +387,7 @@ CDEFS    = -DF_CPU=$(F_CPU) ${addprefix -D , $(DEFINES)}
 CXXDEFS  = $(CDEFS)
 
 ifeq ($(HARDWARE_VARIANT), Teensy)
-CDEFS  += -DUSB_SERIAL
+CDEFS  += -DUSB_SERIAL -DUSBCON=1286
 SRC    += usb.c pins_teensy.c
 CXXSRC += usb_api.cpp
 endif
@@ -384,7 +403,6 @@ CDEBUG = -g$(DEBUG)
 CWARN = -Wall -Wstrict-prototypes
 CTUNING = -funsigned-char -funsigned-bitfields -fpack-struct \
 	-fshort-enums -w -ffunction-sections -fdata-sections \
-	-flto \
 	-DARDUINO=$(ARDUINO_VERSION)
 ifneq ($(HARDWARE_MOTHERBOARD),)
 CTUNING += -DMOTHERBOARD=${HARDWARE_MOTHERBOARD}
