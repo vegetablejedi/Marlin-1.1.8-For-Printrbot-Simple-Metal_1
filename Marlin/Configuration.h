@@ -356,10 +356,19 @@
 
   // If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
 
+  // Chinese E3D v6 Clone
+  #ifdef HOTEND_E3D_CLONE
+  #define  DEFAULT_Kp 22.26
+  #define  DEFAULT_Ki 1.72
+  #define  DEFAULT_Kd 72.04
+  #endif
+
   // Ubis 13S
+  #ifdef HOTEND_UBIS13S
   #define  DEFAULT_Kp 32.77
   #define  DEFAULT_Ki 5.56
   #define  DEFAULT_Kd 48.33
+  #endif
 
   // Ultimaker
   //#define  DEFAULT_Kp 22.2
