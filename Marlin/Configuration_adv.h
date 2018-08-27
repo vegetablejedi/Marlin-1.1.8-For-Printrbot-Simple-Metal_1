@@ -219,7 +219,7 @@
  * at90usb1286 to arduino pin mapping is here:
  *     https://labitat.dk/wiki/Panelolu_and_Printrboard_the_easy_way
  */
-#define E0_AUTO_FAN_PIN 37
+#define E0_AUTO_FAN_PIN 44 // from Printrbot's stock firmware
 #define E1_AUTO_FAN_PIN -1
 #define E2_AUTO_FAN_PIN -1
 #define E3_AUTO_FAN_PIN -1
