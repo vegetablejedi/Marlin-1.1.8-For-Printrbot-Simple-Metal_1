@@ -30,11 +30,14 @@
   #include <avr/io.h>
   #include <math.h>
 
+  #if 0
   #if AVR_AT90USB1286_FAMILY  // Teensyduino & Printrboard IDE extensions have compile errors without this
     inline void set_current_from_destination() { COPY(current_position, destination); }
   #else
     extern void set_current_from_destination();
   #endif
+  #endif
+  extern void set_current_from_destination();
 
   #if !UBL_SEGMENTED
 
