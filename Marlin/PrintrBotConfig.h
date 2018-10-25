@@ -3,4 +3,4 @@
 #define EXTRUDER_OLD 1
 #define X_AXIS_UPGRADE 1
 #define ZROD_SUPER_Z 1
-#define HOTEND_E3D_CLONE 1
+#define HOTEND_E3D_V6_CLONE 1
